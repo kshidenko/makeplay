@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAKEPLAY — Pumpkin Studios Game Creator</title>
+<meta name="description" content="MAKEPLAY by Pumpkin Studios — Create and play 2D retro horror games right in your browser. No download needed.">
+<meta name="keywords" content="makeplay, pumpkin studios, 2d game creator, browser game maker, retro horror game">
+<meta property="og:title" content="MAKEPLAY — Pumpkin Studios">
+<meta property="og:description" content="Build and play 2D retro horror games in your browser.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Press+Start+2P&display=swap');
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --orange:#ff6600;--orange-dim:#aa3300;--bg:#030305;--bg2:#0a0a10;
+  --panel:#0d0d18;--border:#1a1a30;--green:#00ff88;--blue:#4488ff;
+  --text:#ccccdd;--bright:#ffffff;
+}
+body{background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace;cursor:none;overflow-x:hidden;}
+#ps-cursor{position:fixed;top:0;left:0;pointer-events:none;z-index:99999;width:20px;height:20px;}
+*{cursor:none!important;}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  background:rgba(3,3,5,0.95);border-bottom:2px solid var(--orange);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:56px;
+}
+.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;}
+.nav-logo .pumpkin{font-size:28px;filter:drop-shadow(0 0 8px #ff6600);}
+.nav-logo .brand{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--orange);line-height:1.4;}
+.nav-logo .brand span{display:block;font-size:8px;color:var(--text);margin-top:2px;}
+.nav-links{display:flex;gap:6px;}
+.nav-btn{
+  padding:6px 14px;border:1px solid var(--border);background:var(--panel);
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;
+  text-decoration:none;transition:all .15s;
+}
+.nav-btn:hover,.nav-btn.active{border-color:var(--orange);color:var(--orange);background:#1a0800;}
+.nav-btn.create{background:var(--orange);color:#000;border-color:var(--orange);font-weight:bold;}
+.nav-btn.create:hover{background:#ff8833;}
+.nav-pumpkin{font-size:12px;color:var(--orange-dim);}
+.nav-pumpkin a{color:var(--orange);text-decoration:none;}
+
+/* PAGES */
+.page{display:none;min-height:100vh;padding-top:56px;}
+.page.active{display:block;}
+
+/* ── HOME PAGE ── */
+#page-home{background:var(--bg);}
+.hero{
+  text-align:center;padding:80px 24px 60px;
+  background:radial-gradient(ellipse at 50% 0%, #1a0800 0%, transparent 70%);
+}
+.hero-tag{font-size:10px;color:var(--orange-dim);letter-spacing:4px;margin-bottom:16px;}
+.hero h1{
+  font-family:'Press Start 2P',monospace;font-size:clamp(18px,4vw,36px);
+  color:var(--orange);line-height:1.4;margin-bottom:12px;
+  text-shadow:0 0 30px #ff6600,0 0 60px #ff330044;
+}
+.hero h1 span{color:var(--bright);}
+.hero p{font-size:14px;color:var(--text);max-width:500px;margin:0 auto 32px;line-height:1.8;}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{
+  padding:12px 28px;background:var(--orange);color:#000;
+  font-family:'Press Start 2P',monospace;font-size:10px;border:none;
+  text-decoration:none;transition:all .15s;display:inline-block;
+}
+.btn-primary:hover{background:#ff8833;transform:translateY(-2px);box-shadow:0 8px 24px #ff660044;}
+.btn-secondary{
+  padding:12px 28px;background:transparent;color:var(--orange);
+  font-family:'Press Start 2P',monospace;font-size:10px;
+  border:2px solid var(--orange);text-decoration:none;transition:all .15s;display:inline-block;
+}
+.btn-secondary:hover{background:#1a0800;}
+
+/* STATS BAR */
+.stats-bar{
+  display:flex;justify-content:center;gap:48px;padding:24px;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:var(--bg2);flex-wrap:wrap;
+}
+.stat{text-align:center;}
+.stat-num{font-family:'Press Start 2P',monospace;font-size:20px;color:var(--orange);}
+.stat-label{font-size:10px;color:var(--text);margin-top:4px;letter-spacing:2px;}
+
+/* GAMES GRID */
+.section{padding:48px 24px;max-width:1100px;margin:0 auto;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.section-title{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--bright);}
+.section-title span{color:var(--orange);}
+.see-all{font-size:11px;color:var(--orange);text-decoration:none;}
+.see-all:hover{color:var(--bright);}
+
+.games-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;}
+.game-card{
+  background:var(--panel);border:1px solid var(--border);
+  overflow:hidden;transition:all .2s;position:relative;
+}
+.game-card:hover{border-color:var(--orange);transform:translateY(-4px);box-shadow:0 12px 32px #00000088;}
+.game-thumb{
+  width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;
+  font-size:48px;position:relative;overflow:hidden;
+}
+.game-thumb canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+.game-info{padding:12px;}
+.game-name{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--bright);margin-bottom:6px;}
+.game-meta{display:flex;gap:12px;font-size:10px;color:var(--text);}
+.game-badge{
+  position:absolute;top:8px;right:8px;
+  padding:2px 6px;font-size:8px;font-family:'Press Start 2P',monospace;
+}
+.badge-official{background:var(--orange);color:#000;}
+.badge-new{background:var(--green);color:#000;}
+.badge-tutorial{background:var(--blue);color:#fff;}
+.play-overlay{
+  position:absolute;inset:0;background:#00000088;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+}
+.game-card:hover .play-overlay{opacity:1;}
+.play-btn-big{
+  padding:10px 20px;background:var(--orange);color:#000;
+  font-family:'Press Start 2P',monospace;font-size:9px;border:none;
+}
+
+/* CATEGORIES */
+.categories{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;}
+.cat-btn{
+  padding:6px 14px;background:var(--panel);border:1px solid var(--border);
+  color:var(--text);font-size:11px;transition:all .15s;
+}
+.cat-btn:hover,.cat-btn.active{border-color:var(--orange);color:var(--orange);}
+
+/* CREATE BANNER */
+.create-banner{
+  margin:48px 24px;padding:40px;
+  background:linear-gradient(135deg, #1a0800 0%, #0d0d18 50%, #000811 100%);
+  border:1px solid var(--orange);display:flex;align-items:center;
+  justify-content:space-between;gap:24px;flex-wrap:wrap;
+  position:relative;overflow:hidden;
+}
+.create-banner::before{
+  content:'';position:absolute;top:-50%;right:-10%;
+  width:300px;height:300px;border-radius:50%;
+  background:radial-gradient(circle, #ff660022 0%, transparent 70%);
+}
+.create-banner-text h2{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--orange);margin-bottom:8px;}
+.create-banner-text p{font-size:12px;color:var(--text);line-height:1.8;max-width:400px;}
+
+/* ── CREATOR PAGE ── */
+#page-create{background:var(--bg);display:none;flex-direction:column;}
+#page-create.active{display:flex;}
+.creator-layout{display:grid;grid-template-columns:200px 1fr 200px;flex:1;height:calc(100vh - 56px);overflow:hidden;}
+
+/* TOOLBOX */
+.toolbox{background:var(--panel);border-right:1px solid var(--border);padding:8px;overflow-y:auto;}
+.tool-section{margin-bottom:16px;}
+.tool-label{font-size:8px;color:var(--orange-dim);letter-spacing:2px;padding:4px;margin-bottom:4px;border-bottom:1px solid var(--border);}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.tool-btn{
+  padding:8px 4px;background:var(--bg2);border:1px solid var(--border);
+  color:var(--text);font-size:8px;font-family:'Share Tech Mono',monospace;
+  text-align:center;transition:all .12s;line-height:1.4;
+}
+.tool-btn:hover{border-color:var(--orange);color:var(--orange);}
+.tool-btn.selected{background:#1a0800;border-color:var(--orange);color:var(--orange);}
+.tool-icon{font-size:16px;display:block;margin-bottom:2px;}
+.color-picker-row{display:flex;gap:4px;flex-wrap:wrap;padding:4px 0;}
+.color-swatch{width:24px;height:24px;border:2px solid transparent;transition:all .1s;}
+.color-swatch:hover,.color-swatch.selected{border-color:var(--bright);transform:scale(1.2);}
+.size-slider{width:100%;margin-top:4px;accent-color:var(--orange);}
+.tool-input{
+  width:100%;background:var(--bg2);border:1px solid var(--border);
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:10px;
+  padding:4px;margin-top:4px;
+}
+
+/* CANVAS AREA */
+.canvas-area{background:#111118;display:flex;flex-direction:column;position:relative;}
+.canvas-toolbar{
+  height:36px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px;padding:0 12px;flex-shrink:0;
+}
+.canvas-toolbar-btn{
+  padding:4px 10px;background:var(--panel);border:1px solid var(--border);
+  color:var(--text);font-size:10px;font-family:'Share Tech Mono',monospace;transition:all .12s;
+}
+.canvas-toolbar-btn:hover{border-color:var(--orange);color:var(--orange);}
+.canvas-toolbar-btn.run{background:var(--green);color:#000;border-color:var(--green);font-weight:bold;}
+.canvas-toolbar-btn.run:hover{background:#00ffaa;}
+.canvas-toolbar-btn.stop{background:#ff3333;color:#fff;border-color:#ff3333;}
+.canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}
+#game-canvas{
+  background:#000;border:2px solid var(--border);
+  image-rendering:pixelated;image-rendering:crisp-edges;
+}
+.canvas-coords{
+  position:absolute;bottom:8px;right:8px;
+  font-size:9px;color:var(--orange-dim);background:rgba(0,0,0,.7);padding:2px 6px;
+}
+.canvas-zoom{
+  position:absolute;bottom:8px;left:8px;
+  display:flex;gap:4px;
+}
+.zoom-btn{
+  padding:2px 8px;background:var(--panel);border:1px solid var(--border);
+  color:var(--text);font-size:12px;
+}
+.zoom-btn:hover{border-color:var(--orange);color:var(--orange);}
+
+/* PROPERTIES PANEL */
+.props-panel{background:var(--panel);border-left:1px solid var(--border);overflow-y:auto;padding:8px;}
+.props-section{margin-bottom:16px;}
+.props-title{font-size:8px;color:var(--orange-dim);letter-spacing:2px;padding:4px;margin-bottom:8px;border-bottom:1px solid var(--border);}
+.prop-row{display:flex;flex-direction:column;gap:2px;margin-bottom:8px;}
+.prop-label{font-size:9px;color:var(--text);}
+.prop-input{
+  background:var(--bg2);border:1px solid var(--border);color:var(--text);
+  font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px;width:100%;
+}
+.prop-input:focus{outline:none;border-color:var(--orange);}
+.prop-select{
+  background:var(--bg2);border:1px solid var(--border);color:var(--text);
+  font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px;width:100%;
+}
+.layer-item{
+  display:flex;align-items:center;gap:6px;padding:4px;
+  border:1px solid transparent;margin-bottom:2px;font-size:9px;
+}
+.layer-item:hover{border-color:var(--border);}
+.layer-item.selected{border-color:var(--orange);background:#1a0800;}
+.layer-eye{color:var(--text);font-size:11px;}
+.layer-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* GAME SELECTOR in creator */
+.game-selector{
+  padding:12px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;gap:8px;align-items:center;flex-shrink:0;
+}
+.game-selector select{
+  flex:1;background:var(--panel);border:1px solid var(--border);
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px;
+}
+.game-selector-btn{
+  padding:4px 10px;background:var(--panel);border:1px solid var(--border);
+  color:var(--text);font-size:10px;font-family:'Share Tech Mono',monospace;
+}
+.game-selector-btn:hover{border-color:var(--orange);color:var(--orange);}
+.game-selector-btn.new{background:var(--orange);color:#000;border-color:var(--orange);}
+
+/* MODAL */
+.modal-bg{
+  display:none;position:fixed;inset:0;background:#000000cc;
+  z-index:2000;align-items:center;justify-content:center;
+}
+.modal-bg.open{display:flex;}
+.modal{
+  background:var(--panel);border:2px solid var(--orange);
+  padding:32px;max-width:480px;width:90%;
+}
+.modal h2{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--orange);margin-bottom:16px;}
+.modal p{font-size:12px;line-height:1.8;margin-bottom:16px;color:var(--text);}
+.modal-input{
+  width:100%;background:var(--bg);border:1px solid var(--border);
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:13px;
+  padding:10px;margin-bottom:12px;
+}
+.modal-input:focus{outline:none;border-color:var(--orange);}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btn{
+  padding:8px 20px;background:var(--panel);border:1px solid var(--border);
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;
+}
+.modal-btn.confirm{background:var(--orange);color:#000;border-color:var(--orange);}
+.modal-btn:hover{border-color:var(--orange);color:var(--orange);}
+.modal-btn.confirm:hover{background:#ff8833;color:#000;}
+
+/* PUBLISH BANNER */
+.publish-success{
+  display:none;position:fixed;bottom:24px;right:24px;z-index:3000;
+  background:var(--green);color:#000;padding:16px 24px;
+  font-family:'Press Start 2P',monospace;font-size:10px;
+  border:2px solid #00cc66;animation:slideUp .3s ease;
+}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);}
+::-webkit-scrollbar-thumb:hover{background:var(--orange-dim);}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--border);background:var(--bg2);
+  padding:24px;text-align:center;font-size:10px;color:var(--text);
+}
+footer a{color:var(--orange);text-decoration:none;}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<canvas id="ps-cursor"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#" onclick="showPage('home')">
+    <span class="pumpkin">🎃</span>
+    <div class="brand">MAKEPLAY<span>by Pumpkin Studios</span></div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-btn active" id="nav-home" href="#" onclick="showPage('home');return false;">🏠 Home</a>
+    <a class="nav-btn" id="nav-games" href="#" onclick="showPage('games');return false;">🎮 Games</a>
+    <a class="nav-btn create" id="nav-create" href="#" onclick="showPage('create');return false;">⚙️ Create</a>
+  </div>
+  <div class="nav-pumpkin">🎃 <a href="https://kshidenko.github.io/pumpkin/" target="_blank">Pumpkin Studios</a></div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-tag">▸ PUMPKIN STUDIOS PRESENTS</div>
+    <h1>MAKE YOUR OWN<br><span>HORROR GAME</span></h1>
+    <p>Build 2D retro horror games right in your browser. No download. No code. Just drag, drop, and scare.</p>
+    <div class="hero-btns">
+      <a class="btn-primary" href="#" onclick="showPage('create');return false;">▶ START CREATING</a>
+      <a class="btn-secondary" href="#" onclick="showPage('games');return false;">🎮 PLAY GAMES</a>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num" id="stat-games">4</div><div class="stat-label">GAMES</div></div>
+    <div class="stat"><div class="stat-num" id="stat-creators">1</div><div class="stat-label">CREATOR</div></div>
+    <div class="stat"><div class="stat-num">FREE</div><div class="stat-label">ALWAYS</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">IN-BROWSER</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title">▸ <span>FEATURED</span> GAMES</div>
+      <a class="see-all" href="#" onclick="showPage('games');return false;">See all →</a>
+    </div>
+    <div class="games-grid" id="featured-grid"></div>
+  </div>
+
+  <div class="create-banner">
+    <div class="create-banner-text">
+      <h2>🛠 BUILD YOUR GAME</h2>
+      <p>Place tiles, set enemies, write triggers. Publish and share with one click. The MAKEPLAY editor runs entirely in your browser — no installs, no accounts needed.</p>
+    </div>
+    <a class="btn-primary" href="#" onclick="showPage('create');return false;">OPEN EDITOR →</a>
+  </div>
+
+  <div class="section">
+    <div class="section-title" style="margin-bottom:24px;">▸ HOW TO <span>MAKEPLAY</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+      <div style="background:var(--panel);border:1px solid var(--border);padding:24px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:12px;">🗺</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--orange);margin-bottom:8px;">1. DESIGN</div>
+        <div style="font-size:11px;line-height:1.8;">Draw your level with tiles, walls, floors, and hazards</div>
+      </div>
+      <div style="background:var(--panel);border:1px solid var(--border);padding:24px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:12px;">👾</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--orange);margin-bottom:8px;">2. POPULATE</div>
+        <div style="font-size:11px;line-height:1.8;">Place enemies, items, and triggers from the toolbox</div>
+      </div>
+      <div style="background:var(--panel);border:1px solid var(--border);padding:24px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:12px;">▶</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--orange);margin-bottom:8px;">3. TEST</div>
+        <div style="font-size:11px;line-height:1.8;">Hit Play to run your game instantly in the editor</div>
+      </div>
+      <div style="background:var(--panel);border:1px solid var(--border);padding:24px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:12px;">🚀</div>
+        <div style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--orange);margin-bottom:8px;">4. PUBLISH</div>
+        <div style="font-size:11px;line-height:1.8;">Export your game as a shareable HTML file</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    MAKEPLAY © 2024 <a href="https://kshidenko.github.io/pumpkin/">Pumpkin Studios</a> —
+    Free browser horror game platform —
+    <a href="https://kshidenko.github.io/pumpkin/">Play our games</a>
+  </footer>
+</div>
+
+<!-- GAMES PAGE -->
+<div class="page" id="page-games">
+  <div class="section" style="padding-top:80px;">
+    <div class="section-header">
+      <div class="section-title">🎮 ALL <span>GAMES</span></div>
+    </div>
+    <div class="categories">
+      <button class="cat-btn active" onclick="filterGames('all',this)">ALL</button>
+      <button class="cat-btn" onclick="filterGames('horror',this)">HORROR</button>
+      <button class="cat-btn" onclick="filterGames('tutorial',this)">TUTORIAL</button>
+      <button class="cat-btn" onclick="filterGames('official',this)">OFFICIAL</button>
+    </div>
+    <div class="games-grid" id="all-games-grid"></div>
+  </div>
+  <footer>MAKEPLAY © 2024 <a href="https://kshidenko.github.io/pumpkin/">Pumpkin Studios</a></footer>
+</div>
+
+<!-- CREATE PAGE -->
+<div class="page" id="page-create">
+  <div class="game-selector">
+    <select id="project-select" onchange="loadProject(this.value)">
+      <option value="__new__">+ New Project</option>
+    </select>
+    <button class="game-selector-btn new" onclick="newProject()">+ NEW</button>
+    <button class="game-selector-btn" onclick="saveProject()">💾 SAVE</button>
+    <button class="game-selector-btn" onclick="exportGame()">📦 EXPORT HTML</button>
+  </div>
+  <div class="creator-layout">
+    <!-- TOOLBOX -->
+    <div class="toolbox">
+      <div class="tool-section">
+        <div class="tool-label">▸ TOOLS</div>
+        <div class="tool-grid">
+          <button class="tool-btn selected" id="tool-draw" onclick="selectTool('draw')"><span class="tool-icon">✏️</span>DRAW</button>
+          <button class="tool-btn" id="tool-erase" onclick="selectTool('erase')"><span class="tool-icon">⬜</span>ERASE</button>
+          <button class="tool-btn" id="tool-select" onclick="selectTool('select')"><span class="tool-icon">🔲</span>SELECT</button>
+          <button class="tool-btn" id="tool-fill" onclick="selectTool('fill')"><span class="tool-icon">🪣</span>FILL</button>
+        </div>
+      </div>
+      <div class="tool-section">
+        <div class="tool-label">▸ TILES</div>
+        <div class="tool-grid">
+          <button class="tool-btn" id="tile-wall" onclick="selectTile('wall')" title="Wall"><span class="tool-icon">🧱</span>WALL</button>
+          <button class="tool-btn" id="tile-floor" onclick="selectTile('floor')" title="Floor"><span class="tool-icon">⬛</span>FLOOR</button>
+          <button class="tool-btn" id="tile-door" onclick="selectTile('door')" title="Door"><span class="tool-icon">🚪</span>DOOR</button>
+          <button class="tool-btn" id="tile-hazard" onclick="selectTile('hazard')" title="Hazard"><span class="tool-icon">⚡</span>HAZARD</button>
+          <button class="tool-btn" id="tile-ladder" onclick="selectTile('ladder')" title="Ladder"><span class="tool-icon">🪜</span>LADDER</button>
+          <button class="tool-btn" id="tile-exit" onclick="selectTile('exit')" title="Exit"><span class="tool-icon">🏁</span>EXIT</button>
+        </div>
+      </div>
+      <div class="tool-section">
+        <div class="tool-label">▸ ENTITIES</div>
+        <div class="tool-grid">
+          <button class="tool-btn" id="tile-player" onclick="selectTile('player')" title="Player Start"><span class="tool-icon">🟠</span>PLAYER</button>
+          <button class="tool-btn" id="tile-enemy" onclick="selectTile('enemy')" title="Enemy"><span class="tool-icon">👾</span>ENEMY</button>
+          <button class="tool-btn" id="tile-item" onclick="selectTile('item')" title="Item/Pickup"><span class="tool-icon">💊</span>ITEM</button>
+          <button class="tool-btn" id="tile-jump" onclick="selectTile('jumpscare')" title="Jumpscare Trigger"><span class="tool-icon">😱</span>SCARE</button>
+        </div>
+      </div>
+      <div class="tool-section">
+        <div class="tool-label">▸ BRUSH SIZE</div>
+        <input type="range" class="size-slider" id="brush-size" min="1" max="5" value="1" oninput="brushSize=+this.value">
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas-area">
+      <div class="canvas-toolbar">
+        <button class="canvas-toolbar-btn run" id="btn-run" onclick="runGame()">▶ PLAY</button>
+        <button class="canvas-toolbar-btn stop" id="btn-stop" onclick="stopGame()" style="display:none">■ STOP</button>
+        <button class="canvas-toolbar-btn" onclick="clearCanvas()">🗑 CLEAR</button>
+        <button class="canvas-toolbar-btn" onclick="undoAction()">↩ UNDO</button>
+        <span style="flex:1"></span>
+        <span style="font-size:10px;color:var(--orange-dim);" id="canvas-size-label">32×20 tiles</span>
+      </div>
+      <div class="canvas-wrap" id="canvas-wrap">
+        <canvas id="game-canvas" width="640" height="400"></canvas>
+        <div class="canvas-coords" id="canvas-coords">0, 0</div>
+        <div class="canvas-zoom">
+          <button class="zoom-btn" onclick="setZoom(zoom-0.25)">−</button>
+          <span style="font-size:10px;color:var(--text);padding:2px 6px;" id="zoom-label">1×</span>
+          <button class="zoom-btn" onclick="setZoom(zoom+0.25)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROPERTIES -->
+    <div class="props-panel">
+      <div class="props-section">
+        <div class="props-title">▸ PROJECT</div>
+        <div class="prop-row">
+          <label class="prop-label">Name</label>
+          <input class="prop-input" id="proj-name" value="My Horror Game" onchange="currentProject.name=this.value">
+        </div>
+        <div class="prop-row">
+          <label class="prop-label">Author</label>
+          <input class="prop-input" id="proj-author" value="Anonymous">
+        </div>
+        <div class="prop-row">
+          <label class="prop-label">Genre</label>
+          <select class="prop-select" id="proj-genre">
+            <option>Horror</option>
+            <option>Puzzle</option>
+            <option>Adventure</option>
+            <option>Survival</option>
+          </select>
+        </div>
+      </div>
+      <div class="props-section">
+        <div class="props-title">▸ MAP SIZE</div>
+        <div class="prop-row">
+          <label class="prop-label">Width (tiles)</label>
+          <input class="prop-input" id="map-w" type="number" value="32" min="8" max="64" onchange="resizeMap()">
+        </div>
+        <div class="prop-row">
+          <label class="prop-label">Height (tiles)</label>
+          <input class="prop-input" id="map-h" type="number" value="20" min="6" max="40" onchange="resizeMap()">
+        </div>
+      </div>
+      <div class="props-section">
+        <div class="props-title">▸ SELECTED</div>
+        <div id="selection-info" style="font-size:10px;color:var(--text);padding:4px;">No selection</div>
+      </div>
+      <div class="props-section">
+        <div class="props-title">▸ LEGEND</div>
+        <div style="font-size:9px;line-height:2;color:var(--text);">
+          🧱 Wall — solid<br>
+          ⬛ Floor — walkable<br>
+          🚪 Door — interact<br>
+          ⚡ Hazard — kills player<br>
+          🪜 Ladder — climb<br>
+          🏁 Exit — win condition<br>
+          🟠 Player — spawn point<br>
+          👾 Enemy — patrols<br>
+          💊 Item — pickup<br>
+          😱 Scare — jumpscare
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW PROJECT MODAL -->
+<div class="modal-bg" id="modal-new">
+  <div class="modal">
+    <h2>NEW PROJECT</h2>
+    <p>Give your game a name:</p>
+    <input class="modal-input" id="new-game-name" placeholder="My Horror Game" maxlength="40">
+    <div class="modal-btns">
+      <button class="modal-btn" onclick="closeModal('modal-new')">CANCEL</button>
+      <button class="modal-btn confirm" onclick="confirmNewProject()">CREATE</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-bg" id="modal-export">
+  <div class="modal">
+    <h2>📦 EXPORT GAME</h2>
+    <p>Your game will be exported as a standalone HTML file you can share, upload to GitHub Pages, or send to anyone!</p>
+    <p style="color:var(--orange);font-size:11px;">▸ File will download automatically.</p>
+    <div class="modal-btns">
+      <button class="modal-btn" onclick="closeModal('modal-export')">CANCEL</button>
+      <button class="modal-btn confirm" onclick="doExport()">DOWNLOAD HTML</button>
+    </div>
+  </div>
+</div>
+
+<div class="publish-success" id="publish-success">✅ GAME EXPORTED!</div>
+
+<script>
+// ══════════════════════════════════════════
+//  CURSOR
+// ══════════════════════════════════════════
+(function(){
+  var cv=document.getElementById('ps-cursor');
+  cv.width=20;cv.height=20;
+  var cx=cv.getContext('2d');
+  document.addEventListener('mousemove',function(e){
+    cv.style.left=(e.clientX-10)+'px';cv.style.top=(e.clientY-10)+'px';
+  });
+  function d(){
+    cx.clearRect(0,0,20,20);
+    cx.fillStyle='#000';cx.fillRect(8,0,4,20);cx.fillRect(0,8,20,4);
+    cx.fillStyle='#ff6600';cx.fillRect(9,1,2,18);cx.fillRect(1,9,18,2);
+    cx.fillStyle='#fff';cx.fillRect(9,5,2,4);cx.fillRect(9,11,2,4);
+    cx.fillRect(5,9,4,2);cx.fillRect(11,9,4,2);
+    cx.clearRect(8,8,4,4);
+    cx.fillStyle='rgba(255,100,0,0.8)';cx.fillRect(9,9,2,2);
+    requestAnimationFrame(d);
+  }d();
+})();
+
+// ══════════════════════════════════════════
+//  GAME DATA
+// ══════════════════════════════════════════
+const GAMES=[
+  {id:'lab_rat',name:'LAB RAT',icon:'🐀',genre:'Horror',plays:0,badge:'official',
+   desc:'Escape the facility. A side-scrolling horror survival.',url:'https://kshidenko.github.io/pumpkin/lab_rat.html',
+   color:'#1a0800',accent:'#ff6600'},
+  {id:'the_slide',name:'THE SLIDE',icon:'🌊',genre:'Horror',plays:0,badge:'official',
+   desc:'Something is wrong at the waterpark. Don\'t stop moving.',url:'https://kshidenko.github.io/pumpkin/the_slide.html',
+   color:'#000d1a',accent:'#0066ff'},
+  {id:'lab_day',name:'DAY SHIFT',icon:'🏢',genre:'Horror',plays:0,badge:'official',
+   desc:'Just another day at the lab. Everything is fine.',url:'https://kshidenko.github.io/pumpkin/lab_day.html',
+   color:'#0a0a00',accent:'#ffcc00'},
+  {id:'tutorial',name:'HOW TO MAKEPLAY',icon:'📖',genre:'Tutorial',plays:0,badge:'tutorial',
+   desc:'Learn to build your own 2D horror game. Start here.',url:'#',onclick:'startTutorial()',
+   color:'#001a0d',accent:'#00ff88'},
+];
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const nb=document.getElementById('nav-'+id);
+  if(nb)nb.classList.add('active');
+}
+
+// ══════════════════════════════════════════
+//  RENDER GAME CARDS
+// ══════════════════════════════════════════
+function renderGames(targetId,games){
+  const el=document.getElementById(targetId);
+  el.innerHTML=games.map(g=>`
+    <div class="game-card" data-genre="${g.genre.toLowerCase()}" data-badge="${g.badge}">
+      <div class="game-thumb" style="background:${g.color};">
+        <div style="font-size:56px;z-index:1;">${g.icon}</div>
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,${g.color} 100%);"></div>
+        <span class="game-badge badge-${g.badge}">${g.badge.toUpperCase()}</span>
+        <div class="play-overlay">
+          <button class="play-btn-big" onclick="${g.onclick||('openGame(\''+g.id+'\')')}">▶ PLAY</button>
+        </div>
+      </div>
+      <div class="game-info">
+        <div class="game-name" style="color:${g.accent};">${g.name}</div>
+        <div style="font-size:10px;color:var(--text);margin:4px 0 6px;line-height:1.6;">${g.desc}</div>
+        <div class="game-meta">
+          <span>🎮 ${g.genre}</span>
+          <span style="color:${g.accent}">▸ ${g.badge}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openGame(id){
+  const g=GAMES.find(x=>x.id===id);
+  if(!g||!g.url||g.url==='#'){if(g&&g.onclick)eval(g.onclick);return;}
+  window.open(g.url,'_blank');
+}
+
+function filterGames(cat,btn){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards=document.querySelectorAll('#all-games-grid .game-card');
+  cards.forEach(c=>{
+    if(cat==='all')c.style.display='';
+    else if(c.dataset.genre===cat||c.dataset.badge===cat)c.style.display='';
+    else c.style.display='none';
+  });
+}
+
+// ══════════════════════════════════════════
+//  EDITOR STATE
+// ══════════════════════════════════════════
+const TILE_SIZE=20;
+let mapW=32,mapH=20;
+let tileMap=[];
+let currentTool='draw';
+let currentTile='wall';
+let brushSize=1;
+let zoom=1;
+let isDrawing=false;
+let history=[];
+let gameRunning=false;
+let currentProject={name:'My Horror Game',tiles:null};
+let projects=JSON.parse(localStorage.getItem('mp_projects')||'[]');
+
+const TILE_COLORS={
+  wall:'#444466',floor:'#1a1a2a',door:'#885500',hazard:'#ff2200',
+  ladder:'#886600',exit:'#006633',player:'#ff6600',enemy:'#cc0044',
+  item:'#0088cc',jumpscare:'#8800cc',empty:null
+};
+const TILE_EMOJI={
+  wall:'🧱',floor:'⬛',door:'🚪',hazard:'⚡',ladder:'🪜',exit:'🏁',
+  player:'🟠',enemy:'👾',item:'💊',jumpscare:'😱'
+};
+
+function initMap(){
+  tileMap=[];
+  for(let y=0;y<mapH;y++){
+    tileMap[y]=[];
+    for(let x=0;x<mapW;x++){
+      // Default: walls around edges, floor inside
+      if(x===0||x===mapW-1||y===0||y===mapH-1)tileMap[y][x]='wall';
+      else tileMap[y][x]='floor';
+    }
+  }
+  // Place default player spawn
+  tileMap[mapH-2][1]='player';
+  tileMap[mapH-2][mapW-2]='exit';
+  renderCanvas();
+}
+
+function resizeMap(){
+  mapW=+document.getElementById('map-w').value||32;
+  mapH=+document.getElementById('map-h').value||20;
+  document.getElementById('canvas-size-label').textContent=mapW+'×'+mapH+' tiles';
+  const canvas=document.getElementById('game-canvas');
+  canvas.width=mapW*TILE_SIZE;
+  canvas.height=mapH*TILE_SIZE;
+  initMap();
+}
+
+// ══════════════════════════════════════════
+//  CANVAS RENDERING
+// ══════════════════════════════════════════
+function renderCanvas(){
+  const canvas=document.getElementById('game-canvas');
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  for(let y=0;y<mapH;y++){
+    for(let x=0;x<mapW;x++){
+      const t=tileMap[y]?tileMap[y][x]:'empty';
+      const col=TILE_COLORS[t];
+      if(col){
+        ctx.fillStyle=col;
+        ctx.fillRect(x*TILE_SIZE,y*TILE_SIZE,TILE_SIZE,TILE_SIZE);
+        // Entity labels
+        if(['player','enemy','item','jumpscare','exit','door'].includes(t)){
+          ctx.font=`${TILE_SIZE-4}px serif`;
+          ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText(TILE_EMOJI[t],x*TILE_SIZE+TILE_SIZE/2,y*TILE_SIZE+TILE_SIZE/2);
+        }
+      }
+      // Grid
+      ctx.strokeStyle='#ffffff08';
+      ctx.strokeRect(x*TILE_SIZE,y*TILE_SIZE,TILE_SIZE,TILE_SIZE);
+    }
+  }
+}
+
+// ══════════════════════════════════════════
+//  CANVAS INTERACTION
+// ══════════════════════════════════════════
+function setupCanvasEvents(){
+  const canvas=document.getElementById('game-canvas');
+
+  function getTile(e){
+    const rect=canvas.getBoundingClientRect();
+    const scaleX=canvas.width/rect.width;
+    const scaleY=canvas.height/rect.height;
+    const cx=Math.floor((e.clientX-rect.left)*scaleX/TILE_SIZE);
+    const cy=Math.floor((e.clientY-rect.top)*scaleY/TILE_SIZE);
+    return{x:cx,y:cy};
+  }
+
+  function applyTool(x,y){
+    if(gameRunning)return;
+    const r=brushSize-1;
+    for(let dy=-r;dy<=r;dy++){
+      for(let dx=-r;dx<=r;dx++){
+        const nx=x+dx,ny=y+dy;
+        if(nx>=0&&nx<mapW&&ny>=0&&ny<mapH){
+          if(currentTool==='draw')tileMap[ny][nx]=currentTile;
+          else if(currentTool==='erase')tileMap[ny][nx]='floor';
+          else if(currentTool==='fill'){floodFill(x,y,currentTile);return;}
+        }
+      }
+    }
+    renderCanvas();
+  }
+
+  canvas.addEventListener('mousedown',e=>{
+    if(gameRunning)return;
+    isDrawing=true;
+    history.push(JSON.stringify(tileMap));
+    if(history.length>50)history.shift();
+    const{x,y}=getTile(e);applyTool(x,y);
+  });
+  canvas.addEventListener('mousemove',e=>{
+    const{x,y}=getTile(e);
+    document.getElementById('canvas-coords').textContent=`${x}, ${y}`;
+    document.getElementById('selection-info').textContent=
+      tileMap[y]&&tileMap[y][x]?`[${x},${y}] ${(TILE_EMOJI[tileMap[y][x]]||'')} ${tileMap[y][x]}`:'No selection';
+    if(isDrawing)applyTool(x,y);
+  });
+  canvas.addEventListener('mouseup',()=>isDrawing=false);
+  canvas.addEventListener('mouseleave',()=>isDrawing=false);
+}
+
+function floodFill(x,y,newTile){
+  const orig=tileMap[y][x];
+  if(orig===newTile)return;
+  const stack=[[x,y]];
+  while(stack.length){
+    const[cx,cy]=stack.pop();
+    if(cx<0||cx>=mapW||cy<0||cy>=mapH)continue;
+    if(tileMap[cy][cx]!==orig)continue;
+    tileMap[cy][cx]=newTile;
+    stack.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);
+  }
+  renderCanvas();
+}
+
+function selectTool(t){
+  currentTool=t;
+  document.querySelectorAll('.tool-btn[id^="tool-"]').forEach(b=>b.classList.remove('selected'));
+  const btn=document.getElementById('tool-'+t);
+  if(btn)btn.classList.add('selected');
+}
+function selectTile(t){
+  currentTile=t;
+  currentTool='draw';
+  document.querySelectorAll('.tool-btn[id^="tool-"]').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('tool-draw').classList.add('selected');
+  document.querySelectorAll('.tool-btn[id^="tile-"]').forEach(b=>b.classList.remove('selected'));
+  const btn=document.getElementById('tile-'+t);
+  if(btn)btn.classList.add('selected');
+}
+function setZoom(z){
+  zoom=Math.max(0.25,Math.min(3,z));
+  const canvas=document.getElementById('game-canvas');
+  canvas.style.width=(canvas.width*zoom)+'px';
+  canvas.style.height=(canvas.height*zoom)+'px';
+  document.getElementById('zoom-label').textContent=zoom.toFixed(2)+'×';
+}
+function clearCanvas(){if(confirm('Clear entire map?')){history.push(JSON.stringify(tileMap));initMap();}}
+function undoAction(){if(history.length){tileMap=JSON.parse(history.pop());renderCanvas();}}
+
+// ══════════════════════════════════════════
+//  GAME RUNNER (simple platformer preview)
+// ══════════════════════════════════════════
+let player={x:0,y:0,vx:0,vy:0,onGround:false};
+let enemies=[];
+let items=[];
+let gameWon=false,gameDead=false;
+let keys={};
+let animFrame=null;
+
+function runGame(){
+  if(gameRunning)return;
+  gameRunning=true;
+  document.getElementById('btn-run').style.display='none';
+  document.getElementById('btn-stop').style.display='';
+
+  // Find player spawn
+  let px=2,py=mapH-3;
+  enemies=[];items=[];gameWon=false;gameDead=false;
+  for(let y=0;y<mapH;y++)for(let x=0;x<mapW;x++){
+    if(tileMap[y][x]==='player'){px=x;py=y;}
+    if(tileMap[y][x]==='enemy')enemies.push({x:x*TILE_SIZE,y:y*TILE_SIZE,dx:1,startX:x*TILE_SIZE});
+    if(tileMap[y][x]==='item')items.push({x:x*TILE_SIZE,y:y*TILE_SIZE,collected:false});
+  }
+  player={x:px*TILE_SIZE+2,y:py*TILE_SIZE,vx:0,vy:0,onGround:false};
+
+  document.addEventListener('keydown',onKey);
+  document.addEventListener('keyup',offKey);
+  gameLoop();
+}
+
+function onKey(e){keys[e.key]=true;}
+function offKey(e){keys[e.key]=false;}
+
+function gameLoop(){
+  if(!gameRunning)return;
+  updateGame();
+  renderGame();
+  animFrame=requestAnimationFrame(gameLoop);
+}
+
+function isSolid(t){return t==='wall'||t==='door';}
+function isHazard(t){return t==='hazard';}
+function isExit(t){return t==='exit';}
+function isItem(t){return t==='item'||t==='jumpscare';}
+
+function getTileAt(px,py){
+  const tx=Math.floor(px/TILE_SIZE),ty=Math.floor(py/TILE_SIZE);
+  if(tx<0||ty<0||tx>=mapW||ty>=mapH)return'wall';
+  return tileMap[ty][tx]||'empty';
+}
+
+function updateGame(){
+  if(gameDead||gameWon)return;
+  const spd=2;const grav=0.4;const jump=-8;
+  if(keys['ArrowLeft']||keys['a'])player.vx=-spd;
+  else if(keys['ArrowRight']||keys['d'])player.vx=spd;
+  else player.vx*=0.7;
+  if((keys['ArrowUp']||keys[' ']||keys['w'])&&player.onGround){player.vy=jump;player.onGround=false;}
+  player.vy+=grav;player.x+=player.vx;player.y+=player.vy;
+
+  // Collision X
+  const hw=6;
+  if(isSolid(getTileAt(player.x+hw,player.y+8))||isSolid(getTileAt(player.x+hw,player.y+15))){
+    player.x=Math.floor((player.x+hw)/TILE_SIZE)*TILE_SIZE-hw;player.vx=0;
+  }
+  if(isSolid(getTileAt(player.x-hw,player.y+8))||isSolid(getTileAt(player.x-hw,player.y+15))){
+    player.x=Math.ceil((player.x-hw)/TILE_SIZE)*TILE_SIZE+hw;player.vx=0;
+  }
+  // Collision Y
+  player.onGround=false;
+  if(player.vy>0&&(isSolid(getTileAt(player.x,player.y+18))||isSolid(getTileAt(player.x+5,player.y+18))||isSolid(getTileAt(player.x-5,player.y+18)))){
+    player.y=Math.floor((player.y+18)/TILE_SIZE)*TILE_SIZE-18;player.vy=0;player.onGround=true;
+  }
+  if(player.vy<0&&(isSolid(getTileAt(player.x,player.y))||isSolid(getTileAt(player.x+5,player.y))||isSolid(getTileAt(player.x-5,player.y)))){
+    player.y=Math.ceil(player.y/TILE_SIZE)*TILE_SIZE;player.vy=0;
+  }
+
+  // Hazard / exit
+  const t=getTileAt(player.x,player.y+9);
+  if(isHazard(t)){gameDead=true;}
+  if(isExit(t)){gameWon=true;}
+
+  // Enemies
+  enemies.forEach(en=>{
+    en.x+=en.dx*1.5;
+    if(en.x>en.startX+TILE_SIZE*3||en.x<en.startX-TILE_SIZE*3)en.dx*=-1;
+    if(Math.abs(en.x-player.x)<14&&Math.abs(en.y-player.y)<14)gameDead=true;
+  });
+  // Items
+  items.forEach(it=>{
+    if(!it.collected&&Math.abs(it.x-player.x)<16&&Math.abs(it.y-player.y)<16)it.collected=true;
+  });
+}
+
+function renderGame(){
+  const canvas=document.getElementById('game-canvas');
+  const ctx=canvas.getContext('2d');
+  renderCanvas();
+
+  // Player
+  ctx.fillStyle='#ff6600';ctx.fillRect(player.x-6,player.y,12,18);
+  ctx.fillStyle='#ffcc00';ctx.fillRect(player.x-4,player.y,8,8);
+
+  // Enemies
+  ctx.fillStyle='#cc0044';
+  enemies.forEach(en=>{
+    if(!isSolid(getTileAt(en.x,en.y)))
+    ctx.fillRect(en.x-8,en.y-2,16,20);
+    ctx.fillStyle='#ff0066';ctx.fillRect(en.x-6,en.y-2,12,10);ctx.fillStyle='#cc0044';
+  });
+
+  // Items (collected fade)
+  items.forEach(it=>{
+    if(!it.collected){ctx.fillStyle='#0088cc';ctx.fillRect(it.x-6,it.y+2,12,12);}
+  });
+
+  // Overlays
+  if(gameDead){
+    ctx.fillStyle='rgba(180,0,0,0.7)';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#fff';ctx.font='bold 24px monospace';ctx.textAlign='center';
+    ctx.fillText('YOU DIED',canvas.width/2,canvas.height/2);
+    ctx.font='12px monospace';ctx.fillText('Press STOP to edit',canvas.width/2,canvas.height/2+24);
+  }
+  if(gameWon){
+    ctx.fillStyle='rgba(0,100,0,0.7)';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#00ff88';ctx.font='bold 24px monospace';ctx.textAlign='center';
+    ctx.fillText('YOU ESCAPED!',canvas.width/2,canvas.height/2);
+    ctx.font='12px monospace';ctx.fillStyle='#fff';ctx.fillText('Press STOP to edit',canvas.width/2,canvas.height/2+24);
+  }
+}
+
+function stopGame(){
+  gameRunning=false;
+  cancelAnimationFrame(animFrame);
+  document.removeEventListener('keydown',onKey);
+  document.removeEventListener('keyup',offKey);
+  document.getElementById('btn-run').style.display='';
+  document.getElementById('btn-stop').style.display='none';
+  renderCanvas();
+}
+
+// ══════════════════════════════════════════
+//  PROJECTS
+// ══════════════════════════════════════════
+function newProject(){document.getElementById('modal-new').classList.add('open');document.getElementById('new-game-name').focus();}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function confirmNewProject(){
+  const name=document.getElementById('new-game-name').value.trim()||'My Horror Game';
+  closeModal('modal-new');
+  currentProject={name,tiles:null};
+  document.getElementById('proj-name').value=name;
+  initMap();
+}
+
+function saveProject(){
+  currentProject.tiles=JSON.stringify(tileMap);
+  currentProject.name=document.getElementById('proj-name').value||'My Horror Game';
+  const idx=projects.findIndex(p=>p.name===currentProject.name);
+  if(idx>=0)projects[idx]=currentProject;else projects.push(currentProject);
+  localStorage.setItem('mp_projects',JSON.stringify(projects));
+  refreshProjectSelect();
+  const s=document.getElementById('publish-success');
+  s.textContent='💾 SAVED!';s.style.display='block';
+  setTimeout(()=>s.style.display='none',2000);
+}
+
+function refreshProjectSelect(){
+  const sel=document.getElementById('project-select');
+  sel.innerHTML='<option value="__new__">+ New Project</option>';
+  projects.forEach((p,i)=>{
+    const o=document.createElement('option');o.value=i;o.textContent=p.name;sel.appendChild(o);
+  });
+}
+
+function loadProject(val){
+  if(val==='__new__'){newProject();return;}
+  const p=projects[+val];if(!p)return;
+  currentProject=p;
+  document.getElementById('proj-name').value=p.name;
+  if(p.tiles){tileMap=JSON.parse(p.tiles);renderCanvas();}
+}
+
+function exportGame(){document.getElementById('modal-export').classList.add('open');}
+
+function doExport(){
+  closeModal('modal-export');
+  const name=document.getElementById('proj-name').value||'my_horror_game';
+  const mapData=JSON.stringify(tileMap);
+  const html=generateExportHTML(name,mapData);
+  const a=document.createElement('a');
+  a.href='data:text/html;charset=utf-8,'+encodeURIComponent(html);
+  a.download=(name.toLowerCase().replace(/\s+/g,'_'))+'.html';
+  a.click();
+  const s=document.getElementById('publish-success');
+  s.textContent='✅ GAME EXPORTED!';s.style.display='block';
+  setTimeout(()=>s.style.display='none',3000);
+}
+
+function generateExportHTML(name,mapData){
+return`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>${name} — Made with MAKEPLAY</title>
+<style>body{margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;}
+canvas{border:2px solid #ff6600;image-rendering:pixelated;}
+#ui{color:#ff6600;font-family:monospace;font-size:12px;padding:8px;text-align:center;}
+#start{color:#000;background:#ff6600;border:none;padding:12px 24px;font-family:'Courier New',monospace;font-size:14px;margin-top:12px;}
+</style></head><body>
+<div id="ui">
+  <div style="font-family:'Courier New',monospace;font-size:20px;color:#ff6600;margin-bottom:4px;">${name}</div>
+  <div style="font-size:10px;color:#666;">Made with MAKEPLAY • Pumpkin Studios</div>
+  <div style="margin-top:8px;font-size:11px;">Arrow Keys / WASD to move • Space to jump</div>
+  <button id="start" onclick="startGame()">▶ PLAY</button>
+</div>
+<canvas id="c" width="640" height="400"></canvas>
+<script>
+const TMAP=${mapData};
+const TS=20,MW=${mapW},MH=${mapH};
+const COLS={wall:'#444466',floor:'#1a1a2a',door:'#885500',hazard:'#ff2200',ladder:'#886600',exit:'#006633',player:'#ff6600',enemy:'#cc0044',item:'#0088cc',jumpscare:'#8800cc'};
+const EMOJ={exit:'🏁',door:'🚪',jumpscare:'😱',item:'💊'};
+let P,Es,Its,won,dead,keys={},af;
+function solid(t){return t==='wall'||t==='door';}
+function tAt(x,y){const tx=Math.floor(x/TS),ty=Math.floor(y/TS);if(tx<0||ty<0||tx>=MW||ty>=MH)return'wall';return TMAP[ty][tx]||'empty';}
+function startGame(){
+  document.getElementById('start').style.display='none';
+  Es=[];Its=[];won=false;dead=false;let px=2,py=MH-3;
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    if(TMAP[y][x]==='player'){px=x;py=y;}
+    if(TMAP[y][x]==='enemy')Es.push({x:x*TS,y:y*TS,dx:1,sx:x*TS});
+    if(TMAP[y][x]==='item')Its.push({x:x*TS,y:y*TS,c:false});
+  }
+  P={x:px*TS+2,y:py*TS,vx:0,vy:0,g:false};
+  document.addEventListener('keydown',e=>keys[e.key]=true);
+  document.addEventListener('keyup',e=>keys[e.key]=false);
+  loop();
+}
+function loop(){
+  update();render();af=requestAnimationFrame(loop);
+}
+function update(){
+  if(dead||won)return;
+  if(keys['ArrowLeft']||keys['a'])P.vx=-2;
+  else if(keys['ArrowRight']||keys['d'])P.vx=2;
+  else P.vx*=0.7;
+  if((keys['ArrowUp']||keys[' ']||keys['w'])&&P.g){P.vy=-8;P.g=false;}
+  P.vy+=0.4;P.x+=P.vx;P.y+=P.vy;
+  if(solid(tAt(P.x+6,P.y+8))||solid(tAt(P.x+6,P.y+15))){P.x=Math.floor((P.x+6)/TS)*TS-6;P.vx=0;}
+  if(solid(tAt(P.x-6,P.y+8))||solid(tAt(P.x-6,P.y+15))){P.x=Math.ceil((P.x-6)/TS)*TS+6;P.vx=0;}
+  P.g=false;
+  if(P.vy>0&&(solid(tAt(P.x,P.y+18))||solid(tAt(P.x+5,P.y+18))||solid(tAt(P.x-5,P.y+18)))){P.y=Math.floor((P.y+18)/TS)*TS-18;P.vy=0;P.g=true;}
+  if(P.vy<0&&(solid(tAt(P.x,P.y))||solid(tAt(P.x+5,P.y))||solid(tAt(P.x-5,P.y)))){P.y=Math.ceil(P.y/TS)*TS;P.vy=0;}
+  if(tAt(P.x,P.y+9)==='hazard')dead=true;
+  if(tAt(P.x,P.y+9)==='exit')won=true;
+  Es.forEach(e=>{e.x+=e.dx*1.5;if(e.x>e.sx+TS*3||e.x<e.sx-TS*3)e.dx*=-1;if(Math.abs(e.x-P.x)<14&&Math.abs(e.y-P.y)<14)dead=true;});
+  Its.forEach(i=>{if(!i.c&&Math.abs(i.x-P.x)<16&&Math.abs(i.y-P.y)<16)i.c=true;});
+}
+function render(){
+  const c=document.getElementById('c'),ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
+    const t=TMAP[y][x],col=COLS[t];
+    if(col){ctx.fillStyle=col;ctx.fillRect(x*TS,y*TS,TS,TS);}
+    if(EMOJ[t]){ctx.font=(TS-4)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(EMOJ[t],x*TS+TS/2,y*TS+TS/2);}
+    ctx.strokeStyle='#ffffff08';ctx.strokeRect(x*TS,y*TS,TS,TS);
+  }
+  ctx.fillStyle='#ff6600';ctx.fillRect(P.x-6,P.y,12,18);
+  ctx.fillStyle='#ffcc00';ctx.fillRect(P.x-4,P.y,8,8);
+  ctx.fillStyle='#cc0044';
+  Es.forEach(e=>{ctx.fillRect(e.x-8,e.y-2,16,20);});
+  Its.forEach(i=>{if(!i.c){ctx.fillStyle='#0088cc';ctx.fillRect(i.x-6,i.y+2,12,12);}});
+  if(dead){ctx.fillStyle='rgba(180,0,0,.7)';ctx.fillRect(0,0,640,400);ctx.fillStyle='#fff';ctx.font='bold 28px monospace';ctx.textAlign='center';ctx.fillText('YOU DIED',320,200);ctx.font='14px monospace';ctx.fillText('Refresh to retry',320,230);cancelAnimationFrame(af);}
+  if(won){ctx.fillStyle='rgba(0,100,0,.7)';ctx.fillRect(0,0,640,400);ctx.fillStyle='#00ff88';ctx.font='bold 28px monospace';ctx.textAlign='center';ctx.fillText('YOU ESCAPED!',320,200);cancelAnimationFrame(af);}
+}
+<\/script>
+<div style="margin-top:8px;font-size:9px;color:#333;">Made with MAKEPLAY by Pumpkin Studios</div>
+</body></html>`;
+}
+
+// ══════════════════════════════════════════
+//  TUTORIAL
+// ══════════════════════════════════════════
+function startTutorial(){
+  showPage('create');
+  // Load a tutorial map
+  for(let y=0;y<mapH;y++)for(let x=0;x<mapW;x++){
+    if(y===0||y===mapH-1||x===0||x===mapW-1)tileMap[y][x]='wall';
+    else tileMap[y][x]='floor';
+  }
+  // Tutorial layout
+  tileMap[mapH-2][1]='player';
+  tileMap[mapH-2][mapW-2]='exit';
+  for(let x=5;x<10;x++)tileMap[mapH-4][x]='wall';
+  tileMap[mapH-5][7]='enemy';
+  tileMap[mapH-3][15]='hazard';
+  tileMap[mapH-3][16]='hazard';
+  tileMap[mapH-3][17]='hazard';
+  tileMap[mapH-2][20]='item';
+  tileMap[mapH-2][25]='jumpscare';
+  renderCanvas();
+  alert('Tutorial loaded! 🎃\n\nThis is a sample level.\n\n▸ DRAW tiles with the left tools\n▸ Click PLAY to test\n▸ Click EXPORT to save as an HTML file\n\nGo wild — make something scary!');
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+window.addEventListener('load',()=>{
+  renderGames('featured-grid',GAMES.slice(0,4));
+  renderGames('all-games-grid',GAMES);
+  resizeMap();
+  setupCanvasEvents();
+  refreshProjectSelect();
+});
+</script>
+</body>
+</html>
